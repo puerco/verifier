@@ -9,6 +9,8 @@ import (
 	"github.com/carabiner-dev/command/keys"
 	signeroptions "github.com/policylabs/signer/options"
 	"github.com/spf13/cobra"
+
+	"github.com/slsa-framework/verifier/pkg/attestation"
 )
 
 // sharedOptions aggregates the flags every verifier subcommand
@@ -62,7 +64,7 @@ func (so *sharedOptions) rekorOptions() []any {
 	return []any{
 		signeroptions.WithRekorVerification(true),
 		signeroptions.WithRekorURL(so.RekorURL),
-		signeroptions.WithRekorHTTPClient(rekorHTTPClient()),
+		signeroptions.WithRekorHTTPClient(attestation.DefaultRekorHTTPClient()),
 	}
 }
 

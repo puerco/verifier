@@ -6,6 +6,7 @@ package attestation
 import (
 	"errors"
 	"net/http"
+	"runtime"
 	"testing"
 
 	cdattestation "github.com/policylabs/attestation"
@@ -249,4 +250,27 @@ func TestVerifySignaturesPassesRekorOptions(t *testing.T) {
 	env = &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
 	require.NoError(t, New().VerifySignatures(env, SignatureOptions{RekorHTTPClient: client}))
 	assert.Len(t, env.args, 1)
+}
+
+// With no client named, the log is queried with the platform's
+// default: the signer's own client, except on js where it cannot dial
+// and one going through the Fetch API takes its place.
+func TestVerifySignaturesDefaultRekorHTTPClient(t *testing.T) {
+	t.Parallel()
+
+	env := &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	require.NoError(t, New().VerifySignatures(env, SignatureOptions{RekorVerification: true}))
+
+	got := signeroptions.Verification{}
+	for _, arg := range env.args {
+		if fn, ok := arg.(signeroptions.VerificationOptFunc); ok {
+			require.NoError(t, fn(&got))
+		}
+	}
+	if runtime.GOOS == "js" {
+		require.NotNil(t, got.Rekor.HTTPClient)
+		assert.Nil(t, got.Rekor.HTTPClient.Transport, "the default transport is the one that uses fetch")
+	} else {
+		assert.Nil(t, got.Rekor.HTTPClient)
+	}
 }

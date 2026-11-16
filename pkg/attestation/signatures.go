@@ -58,10 +58,10 @@ type SignatureOptions struct {
 	// signer's default.
 	RekorURL string
 
-	// RekorHTTPClient, when set, carries the transparency log query in
-	// place of the signer's default client, which dials its own
-	// connections. Set it where dialing is not possible, such as
-	// js/wasm in a browser.
+	// RekorHTTPClient, when set, carries the transparency log query.
+	// Nil means DefaultRekorHTTPClient: the signer's own client, or on
+	// js/wasm, where that one cannot dial, one that goes through the
+	// Fetch API.
 	RekorHTTPClient *http.Client
 
 	// Required, when true, makes VerifySignatures return
@@ -101,10 +101,14 @@ func (*Verifier) VerifySignatures(env Envelope, opts SignatureOptions) error {
 	}
 	verifyArgs := []any{opts.Keys}
 	if opts.RekorVerification {
+		client := opts.RekorHTTPClient
+		if client == nil {
+			client = DefaultRekorHTTPClient()
+		}
 		verifyArgs = append(verifyArgs,
 			signeroptions.WithRekorVerification(true),
 			signeroptions.WithRekorURL(opts.RekorURL),
-			signeroptions.WithRekorHTTPClient(opts.RekorHTTPClient),
+			signeroptions.WithRekorHTTPClient(client),
 		)
 	}
 	if err := env.Verify(verifyArgs...); err != nil {

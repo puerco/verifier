@@ -291,7 +291,6 @@ func runVSA(cmd *cobra.Command, opts *vsaOptions) error {
 		Keys:              keys,
 		RekorVerification: true,
 		RekorURL:          opts.shared.RekorURL,
-		RekorHTTPClient:   rekorHTTPClient(),
 		Required:          opts.shared.RequireSignatures,
 	}); err != nil {
 		switch {
