@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	signeroptions "github.com/policylabs/signer/options"
 	"github.com/spf13/cobra"
 
 	"github.com/slsa-framework/verifier/pkg/attestation"
@@ -226,10 +225,7 @@ func runBuild(cmd *cobra.Command, opts *buildOptions) error {
 	// Verify envelope signatures. Bare envelopes are unsigned and Verify
 	// is a no-op for them. DSSE uses keys and Sigstore bundles verify
 	// against the embedded trust root.
-	if err := env.Verify(keys,
-		signeroptions.WithRekorVerification(true),
-		signeroptions.WithRekorURL(opts.shared.RekorURL),
-	); err != nil {
+	if err := env.Verify(append([]any{keys}, opts.shared.rekorOptions()...)...); err != nil {
 		return fmt.Errorf("verifying envelope signatures: %w", err)
 	}
 

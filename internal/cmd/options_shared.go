@@ -55,6 +55,17 @@ func (so *sharedOptions) AddFlags(cmd *cobra.Command) {
 	)
 }
 
+// rekorOptions returns the envelope verification options that turn on
+// the transparency log lookup for keyless DSSE envelopes, querying the
+// log at RekorURL over the platform's HTTP client.
+func (so *sharedOptions) rekorOptions() []any {
+	return []any{
+		signeroptions.WithRekorVerification(true),
+		signeroptions.WithRekorURL(so.RekorURL),
+		signeroptions.WithRekorHTTPClient(rekorHTTPClient()),
+	}
+}
+
 func (so *sharedOptions) Validate() error {
 	return errors.Join(
 		so.paramOptions.Validate(),
