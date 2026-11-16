@@ -6,6 +6,7 @@ package attestation
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	cdattestation "github.com/policylabs/attestation"
 	sapi "github.com/policylabs/signer/api/v1"
@@ -57,6 +58,12 @@ type SignatureOptions struct {
 	// signer's default.
 	RekorURL string
 
+	// RekorHTTPClient, when set, carries the transparency log query in
+	// place of the signer's default client, which dials its own
+	// connections. Set it where dialing is not possible, such as
+	// js/wasm in a browser.
+	RekorHTTPClient *http.Client
+
 	// Required, when true, makes VerifySignatures return
 	// ErrSignatureRequired if the envelope carries zero signatures,
 	// ErrSignatureUnverifiable if it carries signatures the verifier
@@ -97,6 +104,7 @@ func (*Verifier) VerifySignatures(env Envelope, opts SignatureOptions) error {
 		verifyArgs = append(verifyArgs,
 			signeroptions.WithRekorVerification(true),
 			signeroptions.WithRekorURL(opts.RekorURL),
+			signeroptions.WithRekorHTTPClient(opts.RekorHTTPClient),
 		)
 	}
 	if err := env.Verify(verifyArgs...); err != nil {

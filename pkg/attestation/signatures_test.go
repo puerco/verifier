@@ -5,10 +5,12 @@ package attestation
 
 import (
 	"errors"
+	"net/http"
 	"testing"
 
 	cdattestation "github.com/policylabs/attestation"
 	sapi "github.com/policylabs/signer/api/v1"
+	signeroptions "github.com/policylabs/signer/options"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -206,4 +208,45 @@ func TestVerifySignaturesPropagatesEnvelopeError(t *testing.T) {
 		require.NotErrorIs(t, err, ErrSignatureUnverifiable)
 		require.NotErrorIs(t, err, ErrSignatureUnverified)
 	}
+}
+
+// argsEnvelope records the arguments its Verify was called with.
+type argsEnvelope struct {
+	*signedEnvelope
+	args []any
+}
+
+func (e *argsEnvelope) Verify(args ...any) error {
+	e.args = args
+	return nil
+}
+
+// The Rekor settings reach the envelope's Verify as signer options:
+// the lookup switch, the log URL and the HTTP client to query it with.
+func TestVerifySignaturesPassesRekorOptions(t *testing.T) {
+	t.Parallel()
+
+	client := &http.Client{}
+	env := &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	err := New().VerifySignatures(env, SignatureOptions{
+		RekorVerification: true,
+		RekorURL:          "https://rekor.example.com",
+		RekorHTTPClient:   client,
+	})
+	require.NoError(t, err)
+
+	got := signeroptions.Verification{}
+	for _, arg := range env.args {
+		if fn, ok := arg.(signeroptions.VerificationOptFunc); ok {
+			require.NoError(t, fn(&got))
+		}
+	}
+	assert.True(t, got.Rekor.Enabled)
+	assert.Equal(t, "https://rekor.example.com", got.Rekor.URL)
+	assert.Same(t, client, got.Rekor.HTTPClient)
+
+	// Without Rekor verification no signer option is passed at all.
+	env = &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	require.NoError(t, New().VerifySignatures(env, SignatureOptions{RekorHTTPClient: client}))
+	assert.Len(t, env.args, 1)
 }
