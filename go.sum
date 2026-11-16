@@ -278,8 +278,8 @@ github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef h1:A9HsByNhogrvm9cWb
 github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef/go.mod h1:lADxMC39cJJqL93Duh1xhAs4I2Zs8mKS89XWXFGp9cs=
 github.com/in-toto/attestation v1.2.0 h1:aPRUZ3azbqD7yEBD5fP3TD8Dszf+YHo284SOcpahjQk=
 github.com/in-toto/attestation v1.2.0/go.mod h1:r79G45gOmzPismgObLSL+rZTFxUgZLOQJI6LofTZgXk=
-github.com/in-toto/in-toto-golang v0.11.0 h1:nfidMYBFx+E0lnmX5KUnN2Pdm8zdNKal1ayjJuzzRoA=
-github.com/in-toto/in-toto-golang v0.11.0/go.mod h1:u3PjTnwFKjp5a1YCcw8SJg0G+tMeKfVoWsWeFMDCMtw=
+github.com/in-toto/in-toto-golang v0.11.1-0.20261116203524-d73848d155e6 h1:pbu9fOx5K4WtrDbAku+5zXYKkW+gXOuEXoRdeRH7oCU=
+github.com/in-toto/in-toto-golang v0.11.1-0.20261116203524-d73848d155e6/go.mod h1:u3PjTnwFKjp5a1YCcw8SJg0G+tMeKfVoWsWeFMDCMtw=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
@@ -355,8 +355,8 @@ github.com/policylabs/policy v0.5.7-0.20261004134513-55e5473eef09 h1:xfDq4vrXBDv
 github.com/policylabs/policy v0.5.7-0.20261004134513-55e5473eef09/go.mod h1:NArOX4b9LMPoc/aa8WPuZkEknGavT3IoYiyJ1rHxUBE=
 github.com/policylabs/predicates v0.6.0 h1:PgM9/8X8p/i4+Mr+VkijTb2ukeykrHmmjBnk1GuSq+M=
 github.com/policylabs/predicates v0.6.0/go.mod h1:g3sbkSBMWlEK8CPVFiUzSOfUoHWKLFYHr7xugF77Z60=
-github.com/policylabs/signer v0.6.8-0.20261116182545-2ec88f2ceead h1:ws4YBI2Com4h7+DzoZTgIrZMShb3wOKVvOjxXSZoPOE=
-github.com/policylabs/signer v0.6.8-0.20261116182545-2ec88f2ceead/go.mod h1:rkh2PH7qlJxFm4EstWWvUhba+4JBh48g0JRUBjRIhyU=
+github.com/policylabs/signer v0.6.8-0.20261116210317-559298a9c1c7 h1:kPBNooUZUBMjaof2kPdto0TBsW902xGpXGNGkM59cgg=
+github.com/policylabs/signer v0.6.8-0.20261116210317-559298a9c1c7/go.mod h1:gwHEem3DfJB0vrkQbhcYXfLvBiRNFmU1KrXPkCId3zs=
 github.com/protobom/protobom v0.6.2 h1:HJTEEnYyU1m3VWoVj0TkDqArWC3Q2CvSFXHUpCkRkoI=
 github.com/protobom/protobom v0.6.2/go.mod h1:WtLWrIyJthYwjbNqn4uMWzculpjNrmVYY78FgCRXe7w=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=

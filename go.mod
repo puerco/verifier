@@ -10,7 +10,7 @@ require (
 	github.com/in-toto/attestation v1.2.0
 	github.com/policylabs/attestation v0.3.0
 	github.com/policylabs/collector v0.4.0
-	github.com/policylabs/signer v0.6.8-0.20261116182545-2ec88f2ceead
+	github.com/policylabs/signer v0.6.8-0.20261116210317-559298a9c1c7
 	github.com/slsa-framework/protos v0.0.0-20260928155916-9fa868b2a756
 	github.com/slsa-framework/source-tool v0.7.1
 	github.com/spf13/cobra v1.10.2
@@ -86,7 +86,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/hjson/hjson-go/v4 v4.7.1 // indirect
-	github.com/in-toto/in-toto-golang v0.11.0 // indirect
+	github.com/in-toto/in-toto-golang v0.11.1-0.20261116203524-d73848d155e6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jedisct1/go-minisign v0.0.0-20260527172527-a09352b57a22 // indirect
