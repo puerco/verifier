@@ -26,22 +26,36 @@ func Load(path string) ([]*Control, error) {
 	return loadFile(path)
 }
 
+// Parse reads user-supplied controls from YAML held in memory, for
+// callers with no file to point Load at: a host with no filesystem,
+// such as js/wasm in a browser, or controls received over the network.
+// The data is what one controls file holds, a control per YAML
+// document, and every control is validated as Load validates it. Data
+// with no control in it yields an empty list.
+func Parse(data []byte) ([]*Control, error) {
+	ctrls, err := parseYAML(data)
+	if err != nil {
+		return nil, fmt.Errorf("parsing controls: %w", err)
+	}
+	for _, c := range ctrls {
+		if vErr := c.Validate(); vErr != nil {
+			return nil, fmt.Errorf("invalid control: %w", vErr)
+		}
+		if vErr := validateTrack(c); vErr != nil {
+			return nil, fmt.Errorf("invalid control: %w", vErr)
+		}
+	}
+	return ctrls, nil
+}
+
 func loadFile(path string) ([]*Control, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", path, err)
 	}
-	ctrls, err := parseYAML(data)
+	ctrls, err := Parse(data)
 	if err != nil {
-		return nil, fmt.Errorf("parsing %s: %w", path, err)
-	}
-	for _, c := range ctrls {
-		if vErr := c.Validate(); vErr != nil {
-			return nil, fmt.Errorf("invalid control in %s: %w", path, vErr)
-		}
-		if vErr := validateTrack(c); vErr != nil {
-			return nil, fmt.Errorf("invalid control in %s: %w", path, vErr)
-		}
+		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	return ctrls, nil
 }
