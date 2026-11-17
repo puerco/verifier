@@ -66,11 +66,23 @@ func New(opts ...Option) (*Verifier, error) {
 
 // Verify runs the layered verification flow against the given statement
 // and returns a Result describing the outcome.
+//
+// Verify reads the outcome of the signature verification from the
+// statement and does not verify signatures itself: the caller is
+// expected to have run the envelope's Verify first, and a statement
+// that was never verified is evaluated as unsigned. VerifyAttestation
+// and VerifyEnvelopes do both in one call.
 func (v *Verifier) Verify(ctx context.Context, statement attestation.Statement, opts ...VerificationOption) (*Result, error) {
-	if statement == nil {
-		return nil, fmt.Errorf("statement is required")
+	vopts, err := v.verificationOptions(opts)
+	if err != nil {
+		return nil, err
 	}
+	return v.verify(ctx, statement, vopts)
+}
 
+// verificationOptions returns the options of one verification: the
+// verifier's defaults with the call's options applied.
+func (v *Verifier) verificationOptions(opts []VerificationOption) (*VerificationOptions, error) {
 	vopts := v.defaultVerificationOptions
 	// The struct copy above still shares the default Params map; clone it
 	// so WithParam calls don't leak into subsequent Verify calls.
@@ -80,34 +92,42 @@ func (v *Verifier) Verify(ctx context.Context, statement attestation.Statement, 
 			return nil, fmt.Errorf("applying verification option: %w", err)
 		}
 	}
+	return &vopts, nil
+}
+
+// verify runs the layered verification flow with resolved options.
+func (v *Verifier) verify(ctx context.Context, statement attestation.Statement, vopts *VerificationOptions) (*Result, error) {
+	if statement == nil {
+		return nil, fmt.Errorf("statement is required")
+	}
 
 	// Layer 1: signature verification.
-	if err := v.impl.VerifySignatures(ctx, &vopts, statement); err != nil {
+	if err := v.impl.VerifySignatures(ctx, vopts, statement); err != nil {
 		return nil, fmt.Errorf("verifying signatures: %w", err)
 	}
 
 	// Layer 2: identity check.
-	if err := v.impl.CheckIdentities(ctx, &vopts, statement); err != nil {
+	if err := v.impl.CheckIdentities(ctx, vopts, statement); err != nil {
 		return nil, fmt.Errorf("checking identities: %w", err)
 	}
 
 	// Layer 2b: bind the statement to the artifacts the caller holds.
 	// A mismatch is a verdict, not an error: the controls still run so
 	// the caller sees the full picture, and the result fails below.
-	subjects, err := v.impl.CheckSubjects(ctx, &vopts, statement)
+	subjects, err := v.impl.CheckSubjects(ctx, vopts, statement)
 	if err != nil {
 		return nil, fmt.Errorf("checking subjects: %w", err)
 	}
 
 	// Layer 3: predicate routing (build vs source).
-	category, err := v.impl.ResolveCategory(&vopts, v.Options.Catalog, statement)
+	category, err := v.impl.ResolveCategory(vopts, v.Options.Catalog, statement)
 	if err != nil {
 		return nil, fmt.Errorf("resolving predicate category: %w", err)
 	}
 
 	// Layer 4: select and run core SLSA controls.
-	coreCtrls := v.impl.SelectCoreControls(&vopts, v.Options.Catalog, category)
-	coreResults, err := v.impl.RunControls(ctx, &vopts, coreCtrls, statement)
+	coreCtrls := v.impl.SelectCoreControls(vopts, v.Options.Catalog, category)
+	coreResults, err := v.impl.RunControls(ctx, vopts, coreCtrls, statement)
 	if err != nil {
 		return nil, fmt.Errorf("running core controls: %w", err)
 	}
@@ -115,7 +135,7 @@ func (v *Verifier) Verify(ctx context.Context, statement attestation.Statement, 
 	// Layer 4b: bind the builder the provenance names to the identity
 	// that signed it. The outcome joins the core roster: signed by the
 	// builder is what SLSA Build L2 asks of provenance.
-	binding, err := v.impl.CheckBuilder(ctx, &vopts, v.Options.Builders, statement)
+	binding, err := v.impl.CheckBuilder(ctx, vopts, v.Options.Builders, statement)
 	if err != nil {
 		return nil, fmt.Errorf("binding builder to signer: %w", err)
 	}
@@ -137,14 +157,14 @@ func (v *Verifier) Verify(ctx context.Context, statement attestation.Statement, 
 	// Layer 5: select and run buildType controls (optional).
 	var buildTypeResults []*ControlResult
 	if vopts.RunBuildTypeControls {
-		btCtrls := v.impl.SelectBuildTypeControls(&vopts, v.Options.Catalog, statement)
+		btCtrls := v.impl.SelectBuildTypeControls(vopts, v.Options.Catalog, statement)
 		// A buildType the catalog knows, with no expectation stated for
 		// it, is an incomplete invocation rather than a pass.
-		run, skipped, err := partitionBuildTypeControls(&vopts, btCtrls, statement)
+		run, skipped, err := partitionBuildTypeControls(vopts, btCtrls, statement)
 		if err != nil {
 			return nil, err
 		}
-		buildTypeResults, err = v.impl.RunControls(ctx, &vopts, run, statement)
+		buildTypeResults, err = v.impl.RunControls(ctx, vopts, run, statement)
 		if err != nil {
 			return nil, fmt.Errorf("running buildType controls: %w", err)
 		}
@@ -154,20 +174,20 @@ func (v *Verifier) Verify(ctx context.Context, statement attestation.Statement, 
 	// Layer 6: select and run user controls (optional).
 	var userResults []*ControlResult
 	if vopts.RunUserControls {
-		userCtrls := v.impl.SelectUserControls(&vopts)
-		userResults, err = v.impl.RunControls(ctx, &vopts, userCtrls, statement)
+		userCtrls := v.impl.SelectUserControls(vopts)
+		userResults, err = v.impl.RunControls(ctx, vopts, userCtrls, statement)
 		if err != nil {
 			return nil, fmt.Errorf("running user controls: %w", err)
 		}
 	}
 
 	// Layer 7: compute the final result.
-	result, err := v.impl.ComputeResult(&vopts, coreResults, buildTypeResults, userResults)
+	result, err := v.impl.ComputeResult(vopts, coreResults, buildTypeResults, userResults)
 	if err != nil {
 		return nil, fmt.Errorf("computing result: %w", err)
 	}
 	if result != nil {
-		capBuilderLevel(&vopts, statement, result)
+		capBuilderLevel(vopts, statement, result)
 		// Record the spec version the core category resolved to so
 		// callers (and emitted VSAs) can state which criteria applied.
 		result.SpecVersion = controls.SpecVersionOf(category)
