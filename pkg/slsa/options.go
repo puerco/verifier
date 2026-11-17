@@ -5,9 +5,11 @@ package slsa
 
 import (
 	"fmt"
+	"net/http"
 	"slices"
 
 	sapi "github.com/policylabs/signer/api/v1"
+	"github.com/policylabs/signer/key"
 
 	"github.com/slsa-framework/verifier/pkg/slsa/builders"
 	"github.com/slsa-framework/verifier/pkg/slsa/controls"
@@ -163,6 +165,31 @@ type VerificationOptions struct {
 	// builder (see the builder registry): otherwise any trusted signer can
 	// claim the id of a builder with a higher level.
 	BuilderLevels map[string]int
+
+	// Keys are the public keys DSSE envelope signatures are verified
+	// with. Sigstore bundles and keyless DSSE envelopes verify against
+	// the embedded Sigstore trust roots and need none.
+	//
+	// Keys and the transparency log settings below configure the
+	// signature verification that VerifyAttestation and VerifyEnvelopes
+	// run. Verify takes a statement the caller already verified and
+	// ignores them.
+	Keys []key.PublicKeyProvider
+
+	// NoTransparencyLog turns off the Rekor lookup that verifies
+	// keyless DSSE envelopes, the only network request a verification
+	// makes. Without it such envelopes are unverifiable, as they are
+	// when the log cannot be reached.
+	NoTransparencyLog bool
+
+	// RekorURL is the transparency log queried to verify keyless DSSE
+	// envelopes. Empty means the public Sigstore instance.
+	RekorURL string
+
+	// RekorHTTPClient carries the transparency log query. Nil means
+	// attestation.DefaultRekorHTTPClient, which on js/wasm goes through
+	// the Fetch API.
+	RekorHTTPClient *http.Client
 }
 
 // DefaultVerificationOptions returns the default per-call options.
@@ -345,6 +372,46 @@ func WithBuilderLevels(levels map[string]int) VerificationOption {
 func WithVerifierID(id string) VerificationOption {
 	return func(o *VerificationOptions) error {
 		o.VerifierID = id
+		return nil
+	}
+}
+
+// WithKeys sets the public keys DSSE envelope signatures are verified
+// with by VerifyAttestation and VerifyEnvelopes, replacing any set
+// before.
+func WithKeys(keys ...key.PublicKeyProvider) VerificationOption {
+	return func(o *VerificationOptions) error {
+		o.Keys = slices.Clone(keys)
+		return nil
+	}
+}
+
+// WithTransparencyLog toggles the Rekor lookup that verifies keyless
+// DSSE envelopes in VerifyAttestation and VerifyEnvelopes. It is on by
+// default; turning it off keeps the verification offline and leaves
+// such envelopes unverifiable.
+func WithTransparencyLog(enabled bool) VerificationOption {
+	return func(o *VerificationOptions) error {
+		o.NoTransparencyLog = !enabled
+		return nil
+	}
+}
+
+// WithRekorURL sets the transparency log VerifyAttestation and
+// VerifyEnvelopes query to verify keyless DSSE envelopes. Empty means
+// the public Sigstore instance.
+func WithRekorURL(url string) VerificationOption {
+	return func(o *VerificationOptions) error {
+		o.RekorURL = url
+		return nil
+	}
+}
+
+// WithRekorHTTPClient sets the HTTP client the transparency log is
+// queried with. Nil restores the platform default.
+func WithRekorHTTPClient(client *http.Client) VerificationOption {
+	return func(o *VerificationOptions) error {
+		o.RekorHTTPClient = client
 		return nil
 	}
 }
