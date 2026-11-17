@@ -5,10 +5,13 @@ package attestation
 
 import (
 	"errors"
+	"net/http"
+	"runtime"
 	"testing"
 
 	cdattestation "github.com/policylabs/attestation"
 	sapi "github.com/policylabs/signer/api/v1"
+	signeroptions "github.com/policylabs/signer/options"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -205,5 +208,69 @@ func TestVerifySignaturesPropagatesEnvelopeError(t *testing.T) {
 		require.NotErrorIs(t, err, ErrSignatureRequired)
 		require.NotErrorIs(t, err, ErrSignatureUnverifiable)
 		require.NotErrorIs(t, err, ErrSignatureUnverified)
+	}
+}
+
+// argsEnvelope records the arguments its Verify was called with.
+type argsEnvelope struct {
+	*signedEnvelope
+	args []any
+}
+
+func (e *argsEnvelope) Verify(args ...any) error {
+	e.args = args
+	return nil
+}
+
+// The Rekor settings reach the envelope's Verify as signer options:
+// the lookup switch, the log URL and the HTTP client to query it with.
+func TestVerifySignaturesPassesRekorOptions(t *testing.T) {
+	t.Parallel()
+
+	client := &http.Client{}
+	env := &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	err := New().VerifySignatures(env, SignatureOptions{
+		RekorVerification: true,
+		RekorURL:          "https://rekor.example.com",
+		RekorHTTPClient:   client,
+	})
+	require.NoError(t, err)
+
+	got := signeroptions.Verification{}
+	for _, arg := range env.args {
+		if fn, ok := arg.(signeroptions.VerificationOptFunc); ok {
+			require.NoError(t, fn(&got))
+		}
+	}
+	assert.True(t, got.Rekor.Enabled)
+	assert.Equal(t, "https://rekor.example.com", got.Rekor.URL)
+	assert.Same(t, client, got.Rekor.HTTPClient)
+
+	// Without Rekor verification no signer option is passed at all.
+	env = &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	require.NoError(t, New().VerifySignatures(env, SignatureOptions{RekorHTTPClient: client}))
+	assert.Len(t, env.args, 1)
+}
+
+// With no client named, the log is queried with the platform's
+// default: the signer's own client, except on js where it cannot dial
+// and one going through the Fetch API takes its place.
+func TestVerifySignaturesDefaultRekorHTTPClient(t *testing.T) {
+	t.Parallel()
+
+	env := &argsEnvelope{signedEnvelope: newSignedEnv(nil, nil, nil)}
+	require.NoError(t, New().VerifySignatures(env, SignatureOptions{RekorVerification: true}))
+
+	got := signeroptions.Verification{}
+	for _, arg := range env.args {
+		if fn, ok := arg.(signeroptions.VerificationOptFunc); ok {
+			require.NoError(t, fn(&got))
+		}
+	}
+	if runtime.GOOS == "js" {
+		require.NotNil(t, got.Rekor.HTTPClient)
+		assert.Nil(t, got.Rekor.HTTPClient.Transport, "the default transport is the one that uses fetch")
+	} else {
+		assert.Nil(t, got.Rekor.HTTPClient)
 	}
 }

@@ -12,7 +12,6 @@ import (
 
 	intoto "github.com/in-toto/attestation/go/v1"
 	sapi "github.com/policylabs/signer/api/v1"
-	signeroptions "github.com/policylabs/signer/options"
 	"github.com/spf13/cobra"
 
 	"github.com/slsa-framework/verifier/pkg/attestation"
@@ -364,10 +363,7 @@ func runSource(cmd *cobra.Command, opts *sourceOptions) error {
 	// Verify envelope signatures. Bare envelopes are unsigned and Verify
 	// is a no-op for them. DSSE uses keys, Sigstore bundles verify
 	// against the embedded trust root.
-	if err := env.Verify(keys,
-		signeroptions.WithRekorVerification(true),
-		signeroptions.WithRekorURL(opts.shared.RekorURL),
-	); err != nil {
+	if err := env.Verify(append([]any{keys}, opts.shared.rekorOptions()...)...); err != nil {
 		return fmt.Errorf("verifying envelope signatures: %w", err)
 	}
 

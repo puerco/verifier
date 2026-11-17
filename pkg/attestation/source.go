@@ -4,7 +4,10 @@
 package attestation
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -31,6 +34,35 @@ func (*Verifier) Fetch(ctx context.Context, path string) ([]Envelope, error) {
 		return nil, fmt.Errorf("no attestation found at %s", path)
 	}
 	return envs, nil
+}
+
+// Parse reads the attestations in data, in order, for callers that
+// hold the bytes rather than a path to them: a host with no
+// filesystem, such as js/wasm in a browser, or an attestation that
+// arrived over the network. Data that is one JSON document is the
+// single bundle, DSSE envelope or bare statement it holds; anything
+// else is read as JSON lines, one attestation per line, as Fetch reads
+// a .jsonl file.
+//
+// As with Fetch, the predicates come back parsed and data holding no
+// attestation is an error. Parse touches no file and makes no network
+// request.
+func (*Verifier) Parse(data []byte) ([]Envelope, error) {
+	envs, err := parse(data)
+	if err != nil {
+		return nil, fmt.Errorf("parsing attestations: %w", err)
+	}
+	if len(envs) == 0 {
+		return nil, errors.New("no attestation found in the data")
+	}
+	return envs, nil
+}
+
+func parse(data []byte) ([]Envelope, error) {
+	if json.Valid(data) {
+		return envelope.Parsers.Parse(bytes.NewReader(data))
+	}
+	return envelope.NewJSONL().Parse(data)
 }
 
 func fetch(ctx context.Context, path string) ([]Envelope, error) {

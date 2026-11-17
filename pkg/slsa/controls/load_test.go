@@ -115,3 +115,61 @@ func TestLoadEmptyDir(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, got)
 }
+
+// Parse reads from bytes what Load reads from a file.
+func TestParse(t *testing.T) {
+	t.Parallel()
+
+	t.Run("a single control", func(t *testing.T) {
+		t.Parallel()
+		got, err := controls.Parse([]byte(sampleControl))
+		require.NoError(t, err)
+		require.Len(t, got, 1)
+		assert.Equal(t, "my-check", got[0].ID)
+	})
+	t.Run("a control per document, as Load reads them", func(t *testing.T) {
+		t.Parallel()
+		got, err := controls.Parse([]byte(sampleControlMultiDoc))
+		require.NoError(t, err)
+
+		loaded, err := controls.Load(writeFile(t, t.TempDir(), "ctrls.yaml", sampleControlMultiDoc))
+		require.NoError(t, err)
+		assert.Equal(t, loaded, got)
+		require.Len(t, got, 2)
+		assert.Equal(t, "a", got[0].ID)
+		assert.Equal(t, "b", got[1].ID)
+	})
+	t.Run("no data holds no control", func(t *testing.T) {
+		t.Parallel()
+		got, err := controls.Parse(nil)
+		require.NoError(t, err)
+		assert.Empty(t, got)
+	})
+	t.Run("data that is not YAML", func(t *testing.T) {
+		t.Parallel()
+		_, err := controls.Parse([]byte("id: [unclosed"))
+		require.ErrorContains(t, err, "parsing controls")
+	})
+	t.Run("a control that does not validate", func(t *testing.T) {
+		t.Parallel()
+		// Missing title.
+		_, err := controls.Parse([]byte(`id: x
+track: build
+checks:
+  - predicateType: https://slsa.dev/provenance/v1
+    expression: "true"
+`))
+		require.ErrorContains(t, err, "invalid control")
+	})
+	t.Run("a control on an unknown track", func(t *testing.T) {
+		t.Parallel()
+		_, err := controls.Parse([]byte(`id: x
+title: X
+track: sideways
+checks:
+  - predicateType: https://slsa.dev/provenance/v1
+    expression: "true"
+`))
+		require.ErrorContains(t, err, "invalid control")
+	})
+}

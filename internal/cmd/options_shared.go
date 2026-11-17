@@ -9,6 +9,8 @@ import (
 	"github.com/carabiner-dev/command/keys"
 	signeroptions "github.com/policylabs/signer/options"
 	"github.com/spf13/cobra"
+
+	"github.com/slsa-framework/verifier/pkg/attestation"
 )
 
 // sharedOptions aggregates the flags every verifier subcommand
@@ -53,6 +55,17 @@ func (so *sharedOptions) AddFlags(cmd *cobra.Command) {
 		&so.GitDigestAliases, "git-digest-aliases", true,
 		"treat gitCommit and other git digests as the hash they are",
 	)
+}
+
+// rekorOptions returns the envelope verification options that turn on
+// the transparency log lookup for keyless DSSE envelopes, querying the
+// log at RekorURL over the platform's HTTP client.
+func (so *sharedOptions) rekorOptions() []any {
+	return []any{
+		signeroptions.WithRekorVerification(true),
+		signeroptions.WithRekorURL(so.RekorURL),
+		signeroptions.WithRekorHTTPClient(attestation.DefaultRekorHTTPClient()),
+	}
 }
 
 func (so *sharedOptions) Validate() error {
