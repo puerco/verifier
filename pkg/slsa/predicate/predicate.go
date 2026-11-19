@@ -9,7 +9,7 @@
 // SLSA build (v0.1, v0.2, v1.0) and SLSA source predicate types only,
 // using the upstream proto definitions from
 // github.com/in-toto/attestation/go/predicates/provenance and
-// github.com/slsa-framework/source-tool/pkg/provenance.
+// github.com/slsa-framework/protos/sourcetool/v1.
 package predicate
 
 import (

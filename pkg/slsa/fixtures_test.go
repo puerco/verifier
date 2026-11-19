@@ -15,7 +15,7 @@ import (
 	provenancev1 "github.com/in-toto/attestation/go/predicates/provenance/v1"
 	"github.com/policylabs/attestation"
 	"github.com/policylabs/collector/envelope"
-	sourceprovenance "github.com/slsa-framework/source-tool/pkg/provenance"
+	sourcetoolv1 "github.com/slsa-framework/protos/sourcetool/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -79,7 +79,7 @@ func TestFixturesParseToExpectedProtoType(t *testing.T) {
 			name:        "source.intoto.json",
 			predicateID: eval.PredicateSourceProvenance,
 			wantPB: func(m proto.Message) bool {
-				_, ok := m.(*sourceprovenance.SourceProvenancePred)
+				_, ok := m.(*sourcetoolv1.SourceProvenancePred)
 				return ok
 			},
 		},
@@ -87,7 +87,7 @@ func TestFixturesParseToExpectedProtoType(t *testing.T) {
 			name:        "source-legacy.intoto.json",
 			predicateID: eval.PredicateSourceProvenance,
 			wantPB: func(m proto.Message) bool {
-				_, ok := m.(*sourceprovenance.SourceProvenancePred)
+				_, ok := m.(*sourcetoolv1.SourceProvenancePred)
 				return ok
 			},
 		},
@@ -95,7 +95,7 @@ func TestFixturesParseToExpectedProtoType(t *testing.T) {
 			name:        "tag.intoto.json",
 			predicateID: eval.PredicateTagProvenance,
 			wantPB: func(m proto.Message) bool {
-				_, ok := m.(*sourceprovenance.TagProvenancePred)
+				_, ok := m.(*sourcetoolv1.TagProvenancePred)
 				return ok
 			},
 		},
@@ -103,7 +103,7 @@ func TestFixturesParseToExpectedProtoType(t *testing.T) {
 			name:        "source-v1.intoto.json",
 			predicateID: eval.PredicateSourceProvenanceV1,
 			wantPB: func(m proto.Message) bool {
-				_, ok := m.(*sourceprovenance.SourceProvenancePred)
+				_, ok := m.(*sourcetoolv1.SourceProvenancePred)
 				return ok
 			},
 		},
@@ -111,7 +111,7 @@ func TestFixturesParseToExpectedProtoType(t *testing.T) {
 			name:        "tag-v1.intoto.json",
 			predicateID: eval.PredicateTagProvenanceV1,
 			wantPB: func(m proto.Message) bool {
-				_, ok := m.(*sourceprovenance.TagProvenancePred)
+				_, ok := m.(*sourcetoolv1.TagProvenancePred)
 				return ok
 			},
 		},
