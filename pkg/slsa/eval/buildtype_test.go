@@ -9,7 +9,7 @@ import (
 	provenancev01 "github.com/in-toto/attestation/go/predicates/provenance/v01"
 	provenancev02 "github.com/in-toto/attestation/go/predicates/provenance/v02"
 	provenancev1 "github.com/in-toto/attestation/go/predicates/provenance/v1"
-	sourceprovenance "github.com/slsa-framework/source-tool/pkg/provenance"
+	sourcetoolv1 "github.com/slsa-framework/protos/sourcetool/v1"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/slsa-framework/verifier/pkg/slsa/eval"
@@ -45,7 +45,7 @@ func TestBuildTypeOfV01(t *testing.T) {
 func TestBuildTypeOfSourceReturnsEmpty(t *testing.T) {
 	t.Parallel()
 
-	pred := &sourceprovenance.SourceProvenancePred{RepoUri: "https://github.com/x/y"}
+	pred := &sourcetoolv1.SourceProvenancePred{RepoUri: "https://github.com/x/y"}
 	assert.Empty(t, eval.BuildTypeOf(pred))
 }
 

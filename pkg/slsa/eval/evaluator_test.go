@@ -8,7 +8,7 @@ import (
 
 	provenancev1 "github.com/in-toto/attestation/go/predicates/provenance/v1"
 	intoto "github.com/in-toto/attestation/go/v1"
-	sourceprovenance "github.com/slsa-framework/source-tool/pkg/provenance"
+	sourcetoolv1 "github.com/slsa-framework/protos/sourcetool/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -147,7 +147,7 @@ func TestEvaluateSourceProvenance(t *testing.T) {
 	e, err := eval.NewEvaluator()
 	require.NoError(t, err)
 
-	pred := &sourceprovenance.SourceProvenancePred{
+	pred := &sourcetoolv1.SourceProvenancePred{
 		RepoUri: "https://github.com/example/repo",
 	}
 	pass, err := e.Evaluate(

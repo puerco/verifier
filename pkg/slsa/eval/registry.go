@@ -8,7 +8,6 @@ import (
 	provenancev02 "github.com/in-toto/attestation/go/predicates/provenance/v02"
 	provenancev1 "github.com/in-toto/attestation/go/predicates/provenance/v1"
 	sourcetoolv1 "github.com/slsa-framework/protos/sourcetool/v1"
-	sourceprovenance "github.com/slsa-framework/source-tool/pkg/provenance"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -45,10 +44,10 @@ var registeredPredicates = map[string]PredicateFactory{
 	PredicateProvenanceV01:      func() proto.Message { return &provenancev01.Provenance{} },
 	PredicateProvenanceV02:      func() proto.Message { return &provenancev02.Provenance{} },
 	PredicateProvenanceV1:       func() proto.Message { return &provenancev1.Provenance{} },
-	PredicateSourceProvenance:   func() proto.Message { return &sourceprovenance.SourceProvenancePred{} },
-	PredicateTagProvenance:      func() proto.Message { return &sourceprovenance.TagProvenancePred{} },
-	PredicateSourceProvenanceV1: func() proto.Message { return &sourceprovenance.SourceProvenancePred{} },
-	PredicateTagProvenanceV1:    func() proto.Message { return &sourceprovenance.TagProvenancePred{} },
+	PredicateSourceProvenance:   func() proto.Message { return &sourcetoolv1.SourceProvenancePred{} },
+	PredicateTagProvenance:      func() proto.Message { return &sourcetoolv1.TagProvenancePred{} },
+	PredicateSourceProvenanceV1: func() proto.Message { return &sourcetoolv1.SourceProvenancePred{} },
+	PredicateTagProvenanceV1:    func() proto.Message { return &sourcetoolv1.TagProvenancePred{} },
 }
 
 // IsKnownPredicateType reports whether the given URI matches a SLSA
