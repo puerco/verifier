@@ -1,6 +1,6 @@
 module github.com/slsa-framework/verifier
 
-go 1.27.0
+go 1.26.0
 
 require (
 	cel.dev/cel-go v0.33.4
@@ -43,8 +43,8 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20261011152517-32a48195b9b2 // indirect
 	github.com/cyphar/filepath-securejoin v0.7.0 // indirect
-	github.com/digitorus/pkcs7 v0.0.0-20261104125046-a476de3098e4 // indirect
-	github.com/digitorus/timestamp v0.0.0-20260914073129-b4b58b92aa51 // indirect
+	github.com/digitorus/pkcs7 v0.0.0-20250730155240-ffadbf3f398c // indirect
+	github.com/digitorus/timestamp v0.0.0-20250524132541-c45532741eea // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.2 // indirect
@@ -79,6 +79,8 @@ require (
 	github.com/google/go-containerregistry v0.22.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.34.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/hjson/hjson-go/v4 v4.7.1 // indirect
 	github.com/in-toto/in-toto-golang v0.11.1-0.20261116203524-d73848d155e6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -111,11 +113,11 @@ require (
 	github.com/sergi/go-diff v1.4.5 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/sigstore/protobuf-specs v0.5.2 // indirect
-	github.com/sigstore/rekor v1.6.2 // indirect
-	github.com/sigstore/rekor-tiles/v2 v2.4.2 // indirect
-	github.com/sigstore/sigstore v1.11.3 // indirect
-	github.com/sigstore/sigstore-go v1.4.0 // indirect
-	github.com/sigstore/timestamp-authority/v2 v2.2.1 // indirect
+	github.com/sigstore/rekor v1.5.4 // indirect
+	github.com/sigstore/rekor-tiles/v2 v2.3.0 // indirect
+	github.com/sigstore/sigstore v1.10.11 // indirect
+	github.com/sigstore/sigstore-go v1.3.0 // indirect
+	github.com/sigstore/timestamp-authority/v2 v2.1.3 // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/skeema/knownhosts v1.3.3 // indirect
 	github.com/spdx/tools-golang v0.5.7 // indirect
